@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>QUnit</title>
+  <link rel="stylesheet" href="//code.jquery.com/qunit/qunit-1.14.0.css">
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js"></script>
+  <script src="//code.jquery.com/qunit/qunit-1.14.0.js"></script>
+  <script src="/lib/func_manager.js"></script>
+<script>
+var count = 0;
+fm('demo');
+fma.demo = function(){count++};
+fma.demo = function(){return count};
+!fma.demo() && alert("error");
+
+test( "function_manager", function() {
+  ok( 1 == "1", "Passed!" );
+  
+  fm('test');
+  
+  equal( typeof fm.test, 'object', "fm.test" );
+  equal( typeof fma.test, 'function', "fma.test" );
+  
+  var tes=0;
+  fma.test = function(){tes++};
+  fma.test = function(){return tes};
+  equal( fma.test(), 1, "setter, getter" );
+  
+  fm.test.clear();
+  fm.test.exec();
+  equal( fm.test.exec(), undefined, "clear, exec" );
+  
+  fm('test');
+  
+  var tes=0;
+  fm.test.set( function(){tes++} );
+  fm.test.set( function(){return tes} );
+  equal( fm.test.get()(), 1, "set, get" );
+  
+  var tes=0;
+  fm.test.pop();
+  fm.test.shift();
+  fm.test.unshift( function(){tes++} );
+  fm.test.push( function(){return tes} );
+  equal( fm.test.get()(), 1, "array prop" );
+  
+  equal( fma.demo(), 2, "" );
+  
+});
+</script>
+</head>
+<body>
+  <div id="qunit"></div>
+  <div id="qunit-fixture"></div>
+</body>
+</html>
