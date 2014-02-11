@@ -5,7 +5,7 @@
  * ---
  * @Copyright(c) 2013, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
- * @version 0.0.2
+ * @version 0.0.3
  * @updated 2014/02/11
  * @author falsandtru https://github.com/falsandtru/
  * @CodingConventions Google JavaScript Style Guide
@@ -26,7 +26,7 @@
   window.fma = accessor = {} ;
   window.fm = manager = function func_manager( name, connect ) {
     accessor[ name ] = null ;
-    manager[ name ] = new function () {
+    return manager[ name ] = new function () {
       var instance, list ;
       instance = this ;
       list = [] ;
