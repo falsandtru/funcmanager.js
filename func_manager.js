@@ -30,7 +30,8 @@
     return manager[ name ] = new function () {
       var instance, list ;
       instance = this ;
-      list = [] ;      
+      list = [] ;
+      
       this.get = function () {
         return function () {
           var fn, args, ret ;
