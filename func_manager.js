@@ -5,7 +5,7 @@
  * ---
  * @Copyright(c) 2013, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
- * @version 0.0.1
+ * @version 0.0.2
  * @updated 2014/02/11
  * @author falsandtru https://github.com/falsandtru/
  * @CodingConventions Google JavaScript Style Guide
@@ -22,8 +22,7 @@
  */
 
 ( function () {
-  var name, manager, accessor, df ;
-  df = document.createDocumentFragment() ;
+  var name, manager, accessor, space ;
   window.fma = accessor = {} ;
   window.fm = manager = function func_manager( name, connect ) {
     accessor[ name ] = null ;
@@ -87,8 +86,15 @@
         
         // IE6-8
         default:
-          window.fma = document.createElement('dummy') ;
-          df.appendChild( window.fma )
+          if ( !space ) {
+            window.fma = document.createElement('func_manager') ;
+            space = document.createElement('div') ;
+            space.innerHTML = '<!--[if IE 8]><wbr><![endif]-->' ;
+            space = space.firstChild ;
+            space = space && space.nodeType === 1 ? document.createDocumentFragment() : document.getElementsByTagName('head')[0] ;
+            space.appendChild( window.fma ) ;
+          }
+          
           var onPropertyChange = function (event) {
           
             if (event.propertyName == name) {
