@@ -8,11 +8,13 @@
   <script src="//code.jquery.com/qunit/qunit-1.14.0.js"></script>
   <script src="/lib/func_manager.js"></script>
 <script>
-var count = 0;
-fm('demo');
-fma.demo = function(){count++};
-fma.demo = function(){return count};
-!fma.demo() && alert("error");
+( function () {
+	var count = 0;
+	fm('demo');
+	fma.demo = function(){count--};
+	fma.demo = function(){return count};
+	!fma.demo() && alert("error");
+} )();
 
 test( "function_manager", function() {
   ok( 1 == "1", "Passed!" );
@@ -22,9 +24,9 @@ test( "function_manager", function() {
   equal( typeof fm.test, 'object', "fm.test" );
   equal( typeof fma.test, 'function', "fma.test" );
   
-  var tes=0;
-  fma.test = function(){tes++};
-  fma.test = function(){return tes};
+  var count=0;
+  fma.test = function(){count++};
+  fma.test = function(){return count};
   equal( fma.test(), 1, "setter, getter" );
   
   fm.test.clear();
@@ -33,19 +35,35 @@ test( "function_manager", function() {
   
   fm('test');
   
-  var tes=0;
-  fm.test.set( function(){tes++} );
-  fm.test.set( function(){return tes} );
+  var count=0;
+  fm.test.set( function(){count++} );
+  fm.test.set( function(){return count} );
   equal( fm.test.get()(), 1, "set, get" );
   
-  var tes=0;
+  var count=0;
   fm.test.pop();
   fm.test.shift();
-  fm.test.unshift( function(){tes++} );
-  fm.test.push( function(){return tes} );
+  fm.test.unshift( function(){count++} );
+  fm.test.push( function(){return count} );
   equal( fm.test.get()(), 1, "array prop" );
   
-  equal( fma.demo(), 2, "" );
+  fm('unique', { unique: true });
+  
+  fm('connect', { connect: true });
+  
+  var count=0;
+  fma.unique = function(){count++};
+  fma.unique = function(){count++};
+  fma.unique = function(){return count};
+  equal( fma.unique(), 1, "unique" );
+  
+  var count=0;
+  fma.connect = function(){return count};
+  fma.connect = function(count){return ++count};
+  fma.connect = function(count){return count};
+  equal( fma.connect(), 1, "connect" );
+  
+  equal( fma.demo(), -2, "" );
   
 });
 </script>

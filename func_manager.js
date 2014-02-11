@@ -5,7 +5,7 @@
  * ---
  * @Copyright(c) 2013, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
- * @version 0.0.3
+ * @version 0.0.4
  * @updated 2014/02/11
  * @author falsandtru https://github.com/falsandtru/
  * @CodingConventions Google JavaScript Style Guide
@@ -24,33 +24,66 @@
 ( function () {
   var name, manager, accessor, space ;
   window.fma = accessor = {} ;
-  window.fm = manager = function func_manager( name, connect ) {
+  window.fm = manager = function func_manager( name, param ) {
+    param = param || {} ;
     accessor[ name ] = null ;
     return manager[ name ] = new function () {
       var instance, list ;
       instance = this ;
-      list = [] ;
-      
-      this.get = function ( fn ) {
+      list = [] ;      
+      this.get = function () {
         return function () {
-          var fn, arg, ret, i = 0 ;
-          arg = [].slice.call( arguments ) ;
-          while ( typeof ( fn = list[ i++ ] ) === 'function' ) {
-            ret = fn.apply( this, arg.concat( connect ? ret : [] ) ) ;
-          }
+          var fn, args, ret ;
+          args = [].slice.call( arguments ) ;
+          instance.each( function ( index, fn ) {
+            ret = fn.apply( instance, args.concat( param.connect ? !index ? param.params : [ ret ] : [] ) ) ;
+          } ) ;
           return ret ;
         } ;
       } ;
       this.set = function () {
-        return instance.push.apply( this, [].slice.call( arguments ) ) ;
+        return instance.push.apply( instance, [].slice.call( arguments ) ) ;
       } ;
       
       this.exec = function () {
-        return instance.get()() ;
+        return instance.get().apply( instance, [].slice.call( arguments ) ) ;
+      } ;
+      this.each = function ( callback ) {
+        var fn, ret ;
+        for ( var i = 0 ; fn = list[ i ] ; i++ ) {
+          ret = callback( i, fn ) ;
+          switch ( typeof ret ) {
+            case 'function':
+              list[ i ] = ret ;
+              break ;
+              
+            default:
+              switch ( ret ) {
+                case false:
+                case null:
+                  list.splice( i--, 1 ) ;
+                  break ;
+              }
+          }
+        }
+      } ;
+      this.clear = function () {
+        list = [] ;
       } ;
       
       this.push = function () {
-        return [].push.apply( list, [].slice.call( arguments ) ) ;
+        var args, ret ;
+        args = [].slice.call( arguments ) ;
+        
+        for ( var i = 0, arg ; arg = args[ i ] ; i++ ) {
+          typeof arg !== 'function' && args.splice( i--, 1 ) ;
+        }
+        param.unique && instance.each( function ( index, fn ) {
+          for ( var i = 0, arg ; arg = args[ i ] ; i++ ) {
+            fn.toString() === arg.toString() && args.splice( i--, 1 ) ;
+          }
+        } ) ;
+        return [].push.apply( list, args ) ;
       } ;
       this.pop = function () {
         return list.pop() ;
@@ -60,9 +93,6 @@
       } ;
       this.shift = function () {
         return list.shift() ;
-      } ;
-      this.clear = function () {
-        list = [] ;
       } ;
       
       switch ( true ) {
