@@ -5,7 +5,7 @@
  * ---
  * @Copyright(c) 2013, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
- * @version 0.0.0
+ * @version 0.0.1
  * @updated 2014/02/11
  * @author falsandtru https://github.com/falsandtru/
  * @CodingConventions Google JavaScript Style Guide
@@ -109,6 +109,7 @@
           window.fma[name] = instance.exec;
           window.fma.attachEvent("onpropertychange", onPropertyChange);
       }
+      return instance ;
     } ;
   }
 } )() ;
