@@ -5,8 +5,8 @@
  * ---
  * @Copyright(c) 2013, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
- * @version 0.0.4
- * @updated 2014/02/11
+ * @version 0.0.5
+ * @updated 2014/02/12
  * @author falsandtru https://github.com/falsandtru/
  * @CodingConventions Google JavaScript Style Guide
  * ---
@@ -21,10 +21,21 @@
  * 
  */
 
-( function () {
-  var name, manager, accessor, space ;
-  window.fma = accessor = {} ;
-  window.fm = manager = function func_manager( name, param ) {
+( function ( manager_name, accessor_name ) {
+  var name, manager, accessor, element, namespace ;
+  
+  function parseFunc( fn ){
+    var ret ;
+    fn = fn.toString() ;
+    ret = fn.match( /^function[^(]*\([^)]*\)[^{]*|{(?:.|[\n\r])*}$/gm ) ;
+    ret[0] = ret[0].replace( /^function[^(]*\(|\).*$/gm, '' ) ;
+    ret[1] = ret[1].replace( /^{|}$/g, '' ) ;
+    ret.splice.apply( {}, [ 0, 1 ].concat( ret[0] && ret[0].match( /\w+/g ) ) ) ;
+    return ret ;
+  }
+  namespace = {} ;
+  window[ accessor_name ] = accessor = {} ;
+  window[ manager_name ] = manager = function func_manager( name, param ) {
     param = param || {} ;
     accessor[ name ] = null ;
     return manager[ name ] = new function () {
@@ -34,17 +45,30 @@
       
       this.get = function () {
         return function () {
-          var fn, args, ret ;
-          args = [].slice.call( arguments ) ;
-          instance.each( function ( index, fn ) {
-            ret = fn.apply( instance, args.concat( param.connect ? !index ? param.params : [ ret ] : [] ) ) ;
+          var manager_name, accessor_name ;
+          var name, manager, accessor, element, namespace, parseFunc ;
+          var list, onPropertyChange ;
+          
+          var _arguments_, _return_, _param_ ;
+          _arguments_ = [].slice.call( arguments ) ;
+          _param_ = param ;
+          instance.each( function () {
+            var instance, param ;
+            _return_ = arguments[ 1 ].apply( this, _arguments_.concat( !arguments[ 0 ] ? _param_.params : _param_.chain ? [ _return_ ] : [] ) ) ;
           } ) ;
-          return ret ;
+          return _return_ ;
         } ;
       } ;
       this.set = function () {
         return instance.push.apply( instance, [].slice.call( arguments ) ) ;
       } ;
+      this.get = param.ctor ? eval( '(1&&function(){' +
+                                      parseFunc( param.ctor ).pop() + ';\n' +
+                                      'return function(){\n' +
+                                        parseFunc( instance.get ).pop().replace( /arguments\[ 1 \]/, 'eval("(1&&"+arguments[ 1 ].toString()+")")' ) + ';\n' +
+                                      '}' +
+                                    '})' ).call( instance )
+                            : this.get ;
       
       this.exec = function () {
         return instance.get().apply( instance, [].slice.call( arguments ) ) ;
@@ -52,7 +76,7 @@
       this.each = function ( callback ) {
         var fn, ret ;
         for ( var i = 0 ; fn = list[ i ] ; i++ ) {
-          ret = callback( i, fn ) ;
+          ret = callback.call( this, i, fn ) ;
           switch ( typeof ret ) {
             case 'function':
               list[ i ] = ret ;
@@ -81,7 +105,9 @@
         }
         param.unique && instance.each( function ( index, fn ) {
           for ( var i = 0, arg ; arg = args[ i ] ; i++ ) {
-            fn.toString() === arg.toString() && args.splice( i--, 1 ) ;
+            if ( fn === arg || fn.toString() === arg.toString() ) {
+              args.splice( i--, 1 ) ;
+            }
           }
         } ) ;
         return [].push.apply( list, args ) ;
@@ -117,36 +143,32 @@
         
         // IE6-8
         default:
-          if ( !space ) {
-            window.fma = document.createElement('func_manager') ;
-            space = document.createElement('div') ;
-            space.innerHTML = '<!--[if IE 8]><wbr><![endif]-->' ;
-            space = space.firstChild ;
-            space = space && space.nodeType === 1 ? document.createDocumentFragment() : document.getElementsByTagName('head')[0] ;
-            space.appendChild( window.fma ) ;
+          function onPropertyChange(event) {
+            if (event.propertyName === name) {
+              accessor.detachEvent("onpropertychange", onPropertyChange);
+              instance.set(accessor[name]);
+              accessor[name] = instance.exec;
+              accessor.attachEvent("onpropertychange", onPropertyChange);
+            }
           }
           
-          var onPropertyChange = function (event) {
+          if ( !element || !( accessor = document.getElementsByTagName('func_manager')[0] ) ) {
+            window[ accessor_name ] = accessor = document.createElement('func_manager') ;
+            element = document.createElement('div') ;
+            element.innerHTML = '<!--[if IE 8]><wbr><![endif]-->' ;
+            element = element.firstChild ;
+            element = element && element.nodeType === 1 ? document.createDocumentFragment() : document.getElementsByTagName('head')[0] ;
+            element.appendChild( accessor ) ;
+          }
+          namespace[ name ] && namespace[ name ]();
+          namespace[ name ] = function () {
+            accessor.detachEvent("onpropertychange", onPropertyChange);
+          } ;
           
-            if (event.propertyName == name) {
-              // temporarily remove the event so it doesn't fire again and create a loop
-              window.fma.detachEvent("onpropertychange", onPropertyChange);
-              
-              // get the changed value, run it through the set function
-              instance.set(window.fma[name]);
-              
-              // restore the get function
-              window.fma[name] = instance.exec;
-              
-              // restore the event
-              window.fma.attachEvent("onpropertychange", onPropertyChange);
-            }
-          };  
-          
-          window.fma[name] = instance.exec;
-          window.fma.attachEvent("onpropertychange", onPropertyChange);
+          accessor[name] = instance.exec;
+          accessor.attachEvent("onpropertychange", onPropertyChange);
       }
       return instance ;
     } ;
   }
-} )() ;
+} )('fm', 'fma') ;
