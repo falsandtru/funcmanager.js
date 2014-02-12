@@ -3,9 +3,9 @@
  * function manager
  * 
  * ---
- * @Copyright(c) 2013, falsandtru
+ * @Copyright(c) 2014, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
- * @version 0.0.5
+ * @version 0.0.6
  * @updated 2014/02/12
  * @author falsandtru https://github.com/falsandtru/
  * @CodingConventions Google JavaScript Style Guide
@@ -22,7 +22,15 @@
  */
 
 ( function ( manager_name, accessor_name ) {
-  var name, manager, accessor, element, namespace ;
+  var name, manager, accessor, namespace, element ;
+  
+  if ( document ) {
+    element = document.createElement('div') ;
+    element.innerHTML = '<!--[if IE 8]><wbr><![endif]-->' ;
+    accessor = !Object.defineProperty || element.firstChild && element.firstChild.nodeType === 1 ? document.getElementsByTagName('_accessor')[0] || document.createElement('_accessor') : false ;
+    accessor && ( Object.defineProperty ? document.createDocumentFragment() : document.getElementsByTagName('head')[0] ).appendChild( accessor ) ;
+    accessor = accessor || {} ;
+  }
   
   function parseFunc( fn ){
     var ret ;
@@ -33,8 +41,9 @@
     ret.splice.apply( {}, [ 0, 1 ].concat( ret[0] && ret[0].match( /\w+/g ) ) ) ;
     return ret ;
   }
+  
   namespace = {} ;
-  window[ accessor_name ] = accessor = {} ;
+  window[ accessor_name ] = accessor ;
   window[ manager_name ] = manager = function func_manager( name, param ) {
     param = param || {} ;
     accessor[ name ] = null ;
@@ -46,7 +55,7 @@
       this.get = function () {
         return function () {
           var manager_name, accessor_name ;
-          var name, manager, accessor, element, namespace, parseFunc ;
+          var name, manager, accessor, namespace, parseFunc, element ;
           var list, onPropertyChange ;
           
           var _arguments_, _return_, _param_ ;
@@ -152,14 +161,6 @@
             }
           }
           
-          if ( !element || !( accessor = document.getElementsByTagName('func_manager')[0] ) ) {
-            window[ accessor_name ] = accessor = document.createElement('func_manager') ;
-            element = document.createElement('div') ;
-            element.innerHTML = '<!--[if IE 8]><wbr><![endif]-->' ;
-            element = element.firstChild ;
-            element = element && element.nodeType === 1 ? document.createDocumentFragment() : document.getElementsByTagName('head')[0] ;
-            element.appendChild( accessor ) ;
-          }
           namespace[ name ] && namespace[ name ]();
           namespace[ name ] = function () {
             accessor.detachEvent("onpropertychange", onPropertyChange);
