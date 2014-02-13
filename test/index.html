@@ -9,28 +9,43 @@
   <script src="/lib/func_manager.js"></script>
 <script>
 ( function () {
+  var accessor = new FuncManager().manager('demo') ;
+  
   var count = 0;
-  fm('demo');
-  fma.demo = function(){count--};
-  fma.demo = function(){return count};
-  !fma.demo() && alert("error");
+  accessor.demo = function(){count--};
+  accessor.demo = function(){return count};
+  !accessor.demo() && alert("error");
 } )();
 
 test( "function manager", function() {
   ok( 1 == "1", "Passed!" );
   
+  var ret, fm, fa ;
+  ret = new FuncManager() ;
+  fa = ret.accessor ;
+  fm = ret.manager ;
+  
   fm('test');
   
   equal( typeof fm.test, 'object', "fm.test" );
-  equal( typeof fma.test, 'function', "fma.test" );
+  equal( typeof fa.test, 'function', "fa.test" );
   
   var count=0;
-  fma.test = function(){count++};
-  fma.test = function(){return count};
-  equal( fma.test(), 1, "setter, getter" );
+  fa.test = function(){count++};
+  fa.test = function(){return count};
+  equal( fa.test(), 1, "setter, getter" );
+  
+  fm.test.each(function(index, fn){
+    equal( index, 0, "each" );
+    equal( typeof fn, 'function', "each" );
+    return false ;
+  });
+  
+  fm.test.replace(function(){count++});
+  fm.test.replace(function(){return count}, function(){return --count});
+  equal( fa.test(), 0, "replace" );
   
   fm.test.clear();
-  fm.test.exec();
   equal( fm.test.exec(), undefined, "clear, exec" );
   
   fm('test');
@@ -50,23 +65,23 @@ test( "function manager", function() {
   fm('params', { params: [ 1 ] });
   
   var count=0;
-  fma.params = function(count){return count};
-  equal( fma.params(), 1, "params" );
+  fa.params = function(count){return count};
+  equal( fa.params(), 1, "params" );
   
   fm('unique', { unique: true });
   
   var count=0;
-  fma.unique = function(){count++};
-  fma.unique = function(){count++};
-  fma.unique = function(){return count};
-  equal( fma.unique(), 1, "unique" );
+  fa.unique = function(){count++};
+  fa.unique = function(){count++};
+  fa.unique = function(){return count};
+  equal( fa.unique(), 1, "unique" );
   
   fm('chain', { chain: true });
   
   var count=0;
-  fma.chain = function(){return ++count};
-  fma.chain = function(count){return count};
-  equal( fma.chain(), 1, "chain" );
+  fa.chain = function(){return ++count};
+  fa.chain = function(count){return count};
+  equal( fa.chain(), 1, "chain" );
   
   fm('ctor', { ctor: function(){
     var count=0;
@@ -74,10 +89,10 @@ test( "function manager", function() {
   } });
   
   var count=0;
-  fma.ctor = function(){++count};
-  fma.ctor = function(){return count * this.rate};
-  equal( fma.ctor(), 2, "ctor" );
-  equal( fma.ctor(), 4, "ctor" );
+  fa.ctor = function(){++count};
+  fa.ctor = function(){return count * this.rate};
+  equal( fa.ctor(), 2, "ctor" );
+  equal( fa.ctor(), 4, "ctor" );
   
   fm('param', {
     ctor: function(){var count=1;},
@@ -87,21 +102,42 @@ test( "function manager", function() {
   });
   
   var count=0;
-  fma.param = function(param){return ++count+param};
-  fma.param = function(ret){return ++ret};
-  fma.param = function(ret){return ret};
-  equal( fma.param(), 4, "ctor, unique, chain, params" );
+  fa.param = function(param){return ++count+param};
+  fa.param = function(ret){return ++ret};
+  fa.param = function(ret){return ret};
+  equal( fa.param(), 4, "ctor, unique, chain, params" );
   
   fm('reset', { ctor: function(){ var count=1; } });
   
   var count=0;
-  fma.reset = function(){count++};
+  fa.reset = function(){count++};
   fm('reset', { ctor: function(){ var count=0; } });
-  fma.reset = function(){count++};
-  fma.reset = function(){return count};
-  equal( fma.reset(), 1, "reset" );
+  fa.reset = function(){count++};
+  fa.reset = function(){return count};
+  equal( fa.reset(), 1, "reset" );
   
-  equal( fma.param(), 5, "ctor, unique, chain, params" );
+  equal( fa.param(), 5, "ctor, unique, chain, params" );
+  
+  var ret, fm2, fa2 ;
+  ret = new FuncManager() ;
+  fa2 = ret.accessor ;
+  fm2 = ret.manager ;
+  
+  fm2('param', {
+    ctor: function(){var count=1;},
+    params: [ 1 ],
+    chain: true,
+    unique: true
+  });
+  
+  var count=0;
+  fa2.param = function(param){return ++count+param};
+  fa2.param = function(ret){return ++ret};
+  fa2.param = function(ret){return ret};
+  equal( fa2.param(), 4, "instance" );
+  
+  equal( fa.param(), 6, "instance" );
+  
 });
 </script>
 </head>
