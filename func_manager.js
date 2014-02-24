@@ -48,13 +48,13 @@
     return ret ;
   }
   
-  window.FuncManager = function () {
+  window.FuncManager = function ( names, param ) {
     var store = {}, onPropertyChange ;
     this.accessor = accessor = holder ? holder.firstChild.cloneNode() : {} ;
     this.manager = manager = function ( name, param ) {
       name = name || '' ;
       param = param || {} ;
-      store[ name ] && store[ name ].detachEvent("onpropertychange", onPropertyChange) ;
+      store[ name ] && store[ name ].detachEvent("onpropertychange", onPropertyChange);
       
       name && ( accessor[ name ] = null ) ;
       manager[ name ] = new function () {
@@ -64,7 +64,7 @@
         
         this.get = function () {
           return function () {
-            var name, manager, accessor, store, parseFunc, container, holder ;
+            var names, name, len, manager, accessor, store, parseFunc, container, holder ;
             var list, onPropertyChange ;
             
             var _arguments_, _return_, _param_ ;
@@ -95,7 +95,7 @@
         this.each = function ( callback ) {
           var fn, ret ;
           for ( var i = 0 ; fn = list[ i ] ; i++ ) {
-            ret = callback.call( this, i, fn ) ;
+            ret = callback.call( instance, i, fn ) ;
             switch ( typeof ret ) {
               case 'function':
                 list[ i ] = ret ;
@@ -130,8 +130,8 @@
           }
           param.unique && instance.each( function ( index, fn ) {
             for ( var i = 0, arg ; arg = args[ i ] ; i++ ) {
-              if ( fn === arg || fn.toString() === arg.toString() ) {
-                args.splice( i--, 1 ) ;
+              if ( fn === arg || ( fn = fn.toString() ) === arg.toString() ) {
+                fn !== instance.get().toString() && fn !== instance.exec.toString() && args.splice( i--, 1 ) ;
               }
             }
           } ) ;
@@ -169,14 +169,14 @@
           // IE6-8
           default:
             holder.appendChild( accessor ) ;
-            onPropertyChange = function (event) {
+            onPropertyChange = function (event){
               if (event.propertyName === name) {
-                accessor.detachEvent("onpropertychange", onPropertyChange);
+                instance.acc.detachEvent("onpropertychange", arguments.callee);
                 instance.set(accessor[ name ]);
-                accessor[ name ] = instance.exec;
-                accessor.attachEvent("onpropertychange", onPropertyChange);
+                instance.acc[ name ] = instance.exec;
+                instance.acc.attachEvent("onpropertychange", arguments.callee);
               }
-            }
+            };
             
             store[ name ] = accessor;
             
@@ -186,6 +186,13 @@
         return instance ;
       } ;
       return accessor;
+    }
+    
+    if ( names ) {
+      names = names.split( /[\s,]{1,}/ ) ;
+      for ( var i = 0, len = names.length, name ; i < len ; i++ ) {
+        manager(names[ i ], param);
+      }
     }
   }
 } )() ;
