@@ -14,7 +14,7 @@
  * 
  */
 
-(function(window, document, undefined) {
+(function(window, document, undefined, _$) {
   
   var NAMESPACE = window;
   
@@ -63,9 +63,8 @@
     },
     
     main: function(context, names, param) {
-      context = C.REGISTER_METHODS(M.jQuery.extend(true, {}, NAMESPACE[M.NAME]));
+      context = C.REGISTER_METHODS(context);
       context.accessor = V.ACCESSOR ? V.ACCESSOR.cloneNode() : {};
-      context.manager = manager;
       context.stock = M.stock();
       switch (typeof names) {
         case 'string':
@@ -78,12 +77,96 @@
         }
       }
       return context;
+    },
+    
+    parseFunc: function(fn){
+      var ret;
+      fn = fn.toString();
+      ret = fn.match(/^function[^(]*\([^)]*\)[^{]*|{(?:.|[\n\r])*}$/gm);
+      ret[0] = ret[0].replace(/^function[^(]*\(|\).*$/gm, '');
+      ret[1] = ret[1].replace(/^{|}$/g, '');
+      ret.splice.apply({}, [0, 1].concat(ret[0] && ret[0].match(/\w+/g)));
+      return ret;
+    },
+    
+    // jQuery.extendだけ抜粋
+    jQuery: jQuery || arguments[arguments.length - 1]
+    
+    /*
+    // FactoryMethodパターン
+    // サブクラスを作成して利用する機能のフォーマット
+    Factory: function() {
+      this.guid = ++M.COUNT;
+      M.OBJECTS[this.guid] = this;
       
-      function manager(name, param) {
+    },
+    
+    // Commandパターン
+    // 複雑な処理を代行させる機能のフォーマット
+    Command: function() {
+      this.guid = ++M.COUNT;
+      M.OBJECTS[this.guid] = this;
+      
+    }
+    */
+  };
+  
+  /* VIEW */
+  V = {
+    DEFINE_TYPE: '',
+    HOLDER: null,
+    ACCESSOR: null,
+    
+    initialize: function() {
+      try {
+        var obj = {};
+        Object.defineProperty(obj, 'test', {
+          get: Function(),
+          set: Function()
+        });
+        V.DEFINE_TYPE = 'ECMA';
+        return;
+      } catch (e) {}
+      
+      try {
+        var obj = {};
+        obj.__defineGetter__('test', Function());
+        obj.__defineSetter__('test', Function());
+        V.DEFINE_TYPE = 'old';
+        return;
+      } catch (e) {}
+      
+      try {
+        var obj = document.createElement('_ACCESSOR');
+        Object.defineProperty(obj, 'test', Function());
+        Object.defineProperty(obj, 'test', Function());
+        V.ACCESSOR = document.createElement('_ACCESSOR');
+        V.DEFINE_TYPE = 'element';
+        return;
+      } catch (e) {}
+      
+      V.HOLDER = document.createElement('_HOLDER');
+      V.ACCESSOR = document.createElement('_ACCESSOR');
+      document.getElementsByTagName('head')[0].appendChild(V.HOLDER);
+      V.DEFINE_TYPE = 'dom';
+    }
+  };
+  
+  /* CONTROLLER */
+  C = {
+    EXEC: function() {
+      return M.MAIN.apply(M, [C.EXTEND(this)].concat([].slice.call(arguments)));
+    },
+    
+    FUNCTIONS: {},
+    
+    METHODS: {
+      manager: function(name, param) {
         name = name || '';
         param = param || {};
         
-        var accessor = context.accessor,
+        var context = this,
+            accessor = context.accessor,
             manager = context.manager,
             stock = context.stock;
         
@@ -225,209 +308,130 @@
         };
         return accessor;
       }
-    },
-    
-    parseFunc: function(fn){
-      var ret;
-      fn = fn.toString();
-      ret = fn.match(/^function[^(]*\([^)]*\)[^{]*|{(?:.|[\n\r])*}$/gm);
-      ret[0] = ret[0].replace(/^function[^(]*\(|\).*$/gm, '');
-      ret[1] = ret[1].replace(/^{|}$/g, '');
-      ret.splice.apply({}, [0, 1].concat(ret[0] && ret[0].match(/\w+/g)));
-      return ret;
-    },
-    
-    // jQuery.extendだけ抜粋
-    jQuery: jQuery || arguments[arguments.length - 1]
-    
-    /*
-    // FactoryMethodパターン
-    // サブクラスを作成して利用する機能のフォーマット
-    Factory: function() {
-      this.guid = ++M.COUNT;
-      M.OBJECTS[this.guid] = this;
-      
-    },
-    
-    // Commandパターン
-    // 複雑な処理を代行させる機能のフォーマット
-    Command: function() {
-      this.guid = ++M.COUNT;
-      M.OBJECTS[this.guid] = this;
-      
-    }
-    */
-  };
-  
-  /* VIEW */
-  V = {
-    DEFINE_TYPE: '',
-    HOLDER: null,
-    ACCESSOR: null,
-    
-    initialize: function() {
-      try {
-        var obj = {};
-        Object.defineProperty(obj, 'test', {
-          get: Function(),
-          set: Function()
-        });
-        V.DEFINE_TYPE = 'ECMA';
-        return;
-      } catch (e) {}
-      
-      try {
-        var obj = {};
-        obj.__defineGetter__('test', Function());
-        obj.__defineSetter__('test', Function());
-        V.DEFINE_TYPE = 'old';
-        return;
-      } catch (e) {}
-      
-      try {
-        var obj = document.createElement('_ACCESSOR');
-        Object.defineProperty(obj, 'test', Function());
-        Object.defineProperty(obj, 'test', Function());
-        V.ACCESSOR = document.createElement('_ACCESSOR');
-        V.DEFINE_TYPE = 'element';
-        return;
-      } catch (e) {}
-      
-      V.HOLDER = document.createElement('_HOLDER');
-      V.ACCESSOR = document.createElement('_ACCESSOR');
-      document.getElementsByTagName('head')[0].appendChild(V.HOLDER);
-      V.DEFINE_TYPE = 'dom';
     }
   };
-  
-  /* CONTROLLER */
-  C = {
-    EXEC: function() {
-      return M.MAIN.apply(M, [C.EXTEND(this)].concat([].slice.call(arguments)));
-    },
-    
-    FUNCTIONS: {},
-    
-    METHODS: {}
-  };
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // >>>>>  Template Driver  >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-  
-  M = ($ || M.jQuery).extend(true, {
-    // ネームスペース（プロパティネーム）
-    NAME: 'mvc',
-    
+
+  M = ($ || _$).extend(true, {
     // スクリプトロード時に一度だけ実行される
     INIT: function() {
       M.initialize();
     },
     initialize: function() {},
-    
-    // インスタンスオブジェクトを保存領域から取得するIDとして使用
-    COUNT: 0,
-    
+
+    // uidを生成
+    UID: function() {
+      return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random()*16|0, v = c == 'x' ? r : (r&0x3|0x8);
+        return v.toString(16).toUpperCase();
+      });
+    },
+
     // プラグインの本体
     MAIN: function() {
       return M.main.apply(this, arguments);
     }
   }, M);
-  
-  V = ($ || M.jQuery).extend(true, {
+
+  V = ($ || _$).extend(true, {
     // VIEWのルート document/window
     DRIVER: document,
     $DRIVER: $ && $(document),
-    
+
     // スクリプトロード時に一度だけ実行される
     INIT: function() {
       V.OBSERVE();
       V.initialize();
     },
     initialize: function() {},
-    
+
     // VIEWが監視するMVCイベントを登録
     OBSERVE: function() {},
-    
+
     // VIEWにする要素を選択/解除する
     BIND: function() {},
     UNBIND: function() {},
-    
+
     // イベント、データ属性、クラスなどで使用する名前
     NAMES: {},
-    
+
     // UIのイベントに登録されるハンドラ
     EVENTS: {}
   }, V);
-  
-  C = ($ || M.jQuery).extend(true, {
+
+  C = ($ || _$).extend(true, {
     // CONTROLLERのルート
     DRIVER: V.DRIVER,
     $DRIVER: V.$DRIVER,
-    
+
     // スクリプトロード時に一度だけ実行される
     INIT: function() {
       // プラグインに関数を設定してネームスペースに登録
       // $.mvc.func, $().mvc.funcとして実行できるようにするための処理
       if (NAMESPACE && NAMESPACE == NAMESPACE.window) {
-        NAMESPACE[M.NAME] = C.REGISTER_FUNCTIONS(C.EXEC);
+        NAMESPACE[M.NAME] = C.EXEC;
       } else {
-        NAMESPACE[M.NAME] = NAMESPACE.prototype[M.NAME] = C.REGISTER_FUNCTIONS(C.EXEC);
+        NAMESPACE[M.NAME] = NAMESPACE.prototype[M.NAME] = C.EXEC;
       }
-      
+
+      C.UPDATE_PROPERTIES(NAMESPACE[M.NAME], C.FUNCTIONS);
+      C.REGISTER_FUNCTIONS(NAMESPACE[M.NAME]);
       C.OBSERVE();
       C.initialize();
     },
     initialize: function() {},
-    
+
     // CONTROLLERが監視するMVCイベントを登録
     OBSERVE: function() {},
-    
+
     // コンテキストを更新する
     EXTEND: function($context) {
       if ($context === NAMESPACE || NAMESPACE && NAMESPACE == NAMESPACE.window) {
@@ -440,41 +444,82 @@
           // コンテキストへの変更をend()で戻せるようadd()
           $context = $context.add();
         }
+        // コンテキストのプロパティを更新
+        C.UPDATE_PROPERTIES($context, C.FUNCTIONS);
+        C.UPDATE_PROPERTIES($context, C.METHODS);
         // コンテキストに関数とメソッドを設定
         C.REGISTER_FUNCTIONS($context);
         C.REGISTER_METHODS($context);
       }
       return $context;
     },
-    
+
     // プラグインとして代入される
     EXEC: function() {
       C.execute.apply(this, arguments);
       return M.MAIN.apply(this, arguments);
     },
     execute: function() {},
-    
-    // CONTROLLERの関数をプラグインに登録する
+
+    // プラグインのプロパティを更新する
+    UPDATE_PROPERTIES: function($context, funcs) {
+      var props = C.PROPERTIES;
+
+      var i;
+      for (i in props) {
+        if (funcs[i]) {
+          $context[i] = _$.proxy(funcs[i], $context)();
+        }
+      }
+      return $context;
+    },
+
+    // プラグインにCONTROLLERの関数を登録する
     REGISTER_FUNCTIONS: function($context) {
-      return M.jQuery.extend(true, $context, C.FUNCTIONS);
+      var funcs = C.FUNCTIONS,
+          props = C.PROPERTIES;
+
+      var i;
+      for (i in funcs) {
+        if (!props[i]) {
+          $context[i] = _$.proxy(funcs[i], $context);
+        }
+      }
+      return $context;
     },
-    
-    // CONTROLLERのメソッドをプラグインに登録する
+
+    // プラグインにCONTROLLERのメソッドを登録する
     REGISTER_METHODS: function($context) {
-      return M.jQuery.extend(true, $context, C.METHODS);
+      var funcs = C.METHODS,
+          props = C.PROPERTIES;
+
+      var i;
+      for (i in funcs) {
+        if (!props[i]) {
+          $context[i] = _$.proxy(funcs[i], $context);
+        }
+      }
+      return $context;
     },
-    
+
+    // プラグインに登録されるプロパティ
+    PROPERTIES: {
+      'uid': true
+    },
+
     // プラグインに登録される関数
     FUNCTIONS: {},
-    
+
     // プラグインに登録されるメソッド
-    METHODS: {}
+    METHODS: {
+      uid: M.UID
+    }
   }, C);
-  
+
   M.INIT();
   V.INIT();
   C.INIT();
-  
+
 // <<<<<  Template Driver  <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
   
 })(window, window.document, void 0, function() {
@@ -491,16 +536,18 @@
    *
    * Date: 2013-07-03T13:48Z
    */
-  var jQuery=function(){},class2type=function(){var a={},d="Boolean Number String Function Array Date RegExp Object Error".split(" "),b,e;for(b=d.length;e=d[--b];)a["[object "+e+"]"]=e.toLowerCase();return a}(),core_hasOwn=class2type.hasOwnProperty,core_toString=class2type.toString;
-jQuery.support=function(a){var d,b,e,h,f,g,c=document.createElement("div");c.setAttribute("className","t");c.innerHTML="  <link/><table></table><a href='/a'>a</a><input type='checkbox'/>";d=c.getElementsByTagName("*")||[];b=c.getElementsByTagName("a")[0];if(!b||!b.style||!d.length)return a;e=document.createElement("select");h=e.appendChild(document.createElement("option"));d=c.getElementsByTagName("input")[0];b.style.cssText="top:1px;float:left;opacity:.5";a.getSetAttribute="t"!==c.className;a.leadingWhitespace=
-3===c.firstChild.nodeType;a.tbody=!c.getElementsByTagName("tbody").length;a.htmlSerialize=!!c.getElementsByTagName("link").length;a.style=/top/.test(b.getAttribute("style"));a.hrefNormalized="/a"===b.getAttribute("href");a.opacity=/^0.5/.test(b.style.opacity);a.cssFloat=!!b.style.cssFloat;a.checkOn=!!d.value;a.optSelected=h.selected;a.enctype=!!document.createElement("form").enctype;a.html5Clone="<:nav></:nav>"!==document.createElement("nav").cloneNode(!0).outerHTML;a.inlineBlockNeedsLayout=!1;a.shrinkWrapBlocks=
-!1;a.pixelPosition=!1;a.deleteExpando=!0;a.noCloneEvent=!0;a.reliableMarginRight=!0;a.boxSizingReliable=!0;d.checked=!0;a.noCloneChecked=d.cloneNode(!0).checked;e.disabled=!0;a.optDisabled=!h.disabled;try{delete c.test}catch(k){a.deleteExpando=!1}d=document.createElement("input");d.setAttribute("value","");a.input=""===d.getAttribute("value");d.value="t";d.setAttribute("type","radio");a.radioValue="t"===d.value;d.setAttribute("checked","t");d.setAttribute("name","t");b=document.createDocumentFragment();
-b.appendChild(d);a.appendChecked=d.checked;a.checkClone=b.cloneNode(!0).cloneNode(!0).lastChild.checked;c.attachEvent&&(c.attachEvent("onclick",function(){a.noCloneEvent=!1}),c.cloneNode(!0).click());for(g in{submit:!0,change:!0,focusin:!0})c.setAttribute(b="on"+g,"t"),a[g+"Bubbles"]=b in window||!1===c.attributes[b].expando;c.style.backgroundClip="content-box";c.cloneNode(!0).style.backgroundClip="";a.clearCloneStyle="content-box"===c.style.backgroundClip;for(g in jQuery(a))break;a.ownLast="0"!==
-g;jQuery(function(){var d,b,e=document.getElementsByTagName("body")[0];e&&(d=document.createElement("div"),d.style.cssText="border:0;width:0;height:0;position:absolute;top:0;left:-9999px;margin-top:1px",e.appendChild(d).appendChild(c),c.innerHTML="<table><tr><td></td><td>t</td></tr></table>",b=c.getElementsByTagName("td"),b[0].style.cssText="padding:0;margin:0;border:0;display:none",f=0===b[0].offsetHeight,b[0].style.display="",b[1].style.display="none",a.reliableHiddenOffsets=f&&0===b[0].offsetHeight,
-c.innerHTML="",c.style.cssText="box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;padding:1px;border:1px;display:block;width:4px;margin-top:1%;position:absolute;top:1%;",jQuery.swap(e,null!=e.style.zoom?{zoom:1}:{},function(){a.boxSizing=4===c.offsetWidth}),window.getComputedStyle&&(a.pixelPosition="1%"!==(window.getComputedStyle(c,null)||{}).top,a.boxSizingReliable="4px"===(window.getComputedStyle(c,null)||{width:"4px"}).width,b=c.appendChild(document.createElement("div")),
-b.style.cssText=c.style.cssText="padding:0;margin:0;border:0;display:block;box-sizing:content-box;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;",b.style.marginRight=b.style.width="0",c.style.width="1px",a.reliableMarginRight=!parseFloat((window.getComputedStyle(b,null)||{}).marginRight)),typeof c.style.zoom!==core_strundefined&&(c.innerHTML="",c.style.cssText="padding:0;margin:0;border:0;display:block;box-sizing:content-box;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;width:1px;padding:1px;display:inline;zoom:1",
-a.inlineBlockNeedsLayout=3===c.offsetWidth,c.style.display="block",c.innerHTML="<div></div>",c.firstChild.style.width="5px",a.shrinkWrapBlocks=3!==c.offsetWidth,a.inlineBlockNeedsLayout&&(e.style.zoom=1)),e.removeChild(d),d=c=b=b=null)});d=e=b=h=b=d=null;return a}({});
-jQuery.extend=jQuery.prototype.extend=function(){var a,d,b,e,h,f=arguments[0]||{},g=1,c=arguments.length,k=!1;"boolean"===typeof f&&(k=f,f=arguments[1]||{},g=2);"object"===typeof f||jQuery.isFunction(f)||(f={});c===g&&(f=this,--g);for(;g<c;g++)if(null!=(h=arguments[g]))for(e in h)a=f[e],b=h[e],f!==b&&(k&&b&&(jQuery.isPlainObject(b)||(d=jQuery.isArray(b)))?(d?(d=!1,a=a&&jQuery.isArray(a)?a:[]):a=a&&jQuery.isPlainObject(a)?a:{},f[e]=jQuery.extend(k,a,b)):void 0!==b&&(f[e]=b));return f};
-jQuery.extend({type:function(a){return null==a?String(a):"object"===typeof a||"function"===typeof a?class2type[core_toString.call(a)]||"object":typeof a},isPlainObject:function(a){var d;if(!a||"object"!==jQuery.type(a)||a.nodeType||jQuery.isWindow(a))return!1;try{if(a.constructor&&!core_hasOwn.call(a,"constructor")&&!core_hasOwn.call(a.constructor.prototype,"isPrototypeOf"))return!1}catch(b){return!1}if(jQuery.support.ownLast)for(d in a)return core_hasOwn.call(a,d);for(d in a);return void 0===d||
-core_hasOwn.call(a,d)},isFunction:function(a){return"function"===jQuery.type(a)},isArray:Array.isArray||function(a){return"array"===jQuery.type(a)},isWindow:function(a){return null!=a&&a==a.window}});return jQuery;
+var readyList,rootjQuery,core_strundefined="undefined",docElem=document.documentElement,_jQuery=window.jQuery,_$=window.$,class2type={},core_deletedIds=[],core_version="1.10.2",core_concat=core_deletedIds.concat,core_push=core_deletedIds.push,core_slice=core_deletedIds.slice,core_indexOf=core_deletedIds.indexOf,core_toString=class2type.toString,core_hasOwn=class2type.hasOwnProperty,core_trim=core_version.trim,jQuery=function(){},class2type=function(){var a={},c="Boolean Number String Function Array Date RegExp Object Error".split(" "),
+b,e;for(b=c.length;e=c[--b];)a["[object "+e+"]"]=e.toLowerCase();return a}();function isArraylike(a){var c=a.length,b=jQuery.type(a);return jQuery.isWindow(a)?!1:1===a.nodeType&&c?!0:"array"===b||"function"!==b&&(0===c||"number"===typeof c&&0<c&&c-1 in a)}jQuery.fn=jQuery.prototype;
+jQuery.extend=jQuery.fn.extend=function(){var a,c,b,e,g,f=arguments[0]||{},h=1,d=arguments.length,k=!1;"boolean"===typeof f&&(k=f,f=arguments[1]||{},h=2);"object"===typeof f||jQuery.isFunction(f)||(f={});d===h&&(f=this,--h);for(;h<d;h++)if(null!=(g=arguments[h]))for(e in g)a=f[e],b=g[e],f!==b&&(k&&b&&(jQuery.isPlainObject(b)||(c=jQuery.isArray(b)))?(c?(c=!1,a=a&&jQuery.isArray(a)?a:[]):a=a&&jQuery.isPlainObject(a)?a:{},f[e]=jQuery.extend(k,a,b)):void 0!==b&&(f[e]=b));return f};
+jQuery.extend({type:function(a){return null==a?String(a):"object"===typeof a||"function"===typeof a?class2type[core_toString.call(a)]||"object":typeof a},makeArray:function(a,c){var b=c||[];null!=a&&(isArraylike(Object(a))?jQuery.merge(b,"string"===typeof a?[a]:a):core_push.call(b,a));return b},merge:function(a,c){var b=c.length,e=a.length,g=0;if("number"===typeof b)for(;g<b;g++)a[e++]=c[g];else for(;void 0!==c[g];)a[e++]=c[g++];a.length=e;return a},isPlainObject:function(a){var c;if(!a||"object"!==
+jQuery.type(a)||a.nodeType||jQuery.isWindow(a))return!1;try{if(a.constructor&&!core_hasOwn.call(a,"constructor")&&!core_hasOwn.call(a.constructor.prototype,"isPrototypeOf"))return!1}catch(b){return!1}if(jQuery.support.ownLast)for(c in a)return core_hasOwn.call(a,c);for(c in a);return void 0===c||core_hasOwn.call(a,c)},isFunction:function(a){return"function"===jQuery.type(a)},isArray:Array.isArray||function(a){return"array"===jQuery.type(a)},isWindow:function(a){return null!=a&&a==a.window},proxy:function(a,
+c){var b,e;"string"===typeof c&&(e=a[c],c=a,a=e);if(jQuery.isFunction(a))return b=core_slice.call(arguments,2),function(){return a.apply(c||this,b.concat(core_slice.call(arguments)))}}});
+jQuery.support=function(a){var c,b,e,g,f,h,d=document.createElement("div");d.setAttribute("className","t");d.innerHTML="  <link/><table></table><a href='/a'>a</a><input type='checkbox'/>";c=d.getElementsByTagName("*")||[];b=d.getElementsByTagName("a")[0];if(!b||!b.style||!c.length)return a;e=document.createElement("select");g=e.appendChild(document.createElement("option"));c=d.getElementsByTagName("input")[0];b.style.cssText="top:1px;float:left;opacity:.5";a.getSetAttribute="t"!==d.className;a.leadingWhitespace=
+3===d.firstChild.nodeType;a.tbody=!d.getElementsByTagName("tbody").length;a.htmlSerialize=!!d.getElementsByTagName("link").length;a.style=/top/.test(b.getAttribute("style"));a.hrefNormalized="/a"===b.getAttribute("href");a.opacity=/^0.5/.test(b.style.opacity);a.cssFloat=!!b.style.cssFloat;a.checkOn=!!c.value;a.optSelected=g.selected;a.enctype=!!document.createElement("form").enctype;a.html5Clone="<:nav></:nav>"!==document.createElement("nav").cloneNode(!0).outerHTML;a.inlineBlockNeedsLayout=!1;a.shrinkWrapBlocks=
+!1;a.pixelPosition=!1;a.deleteExpando=!0;a.noCloneEvent=!0;a.reliableMarginRight=!0;a.boxSizingReliable=!0;c.checked=!0;a.noCloneChecked=c.cloneNode(!0).checked;e.disabled=!0;a.optDisabled=!g.disabled;try{delete d.test}catch(k){a.deleteExpando=!1}c=document.createElement("input");c.setAttribute("value","");a.input=""===c.getAttribute("value");c.value="t";c.setAttribute("type","radio");a.radioValue="t"===c.value;c.setAttribute("checked","t");c.setAttribute("name","t");b=document.createDocumentFragment();
+b.appendChild(c);a.appendChecked=c.checked;a.checkClone=b.cloneNode(!0).cloneNode(!0).lastChild.checked;d.attachEvent&&(d.attachEvent("onclick",function(){a.noCloneEvent=!1}),d.cloneNode(!0).click());for(h in{submit:!0,change:!0,focusin:!0})d.setAttribute(b="on"+h,"t"),a[h+"Bubbles"]=b in window||!1===d.attributes[b].expando;d.style.backgroundClip="content-box";d.cloneNode(!0).style.backgroundClip="";a.clearCloneStyle="content-box"===d.style.backgroundClip;for(h in jQuery.makeArray(a))break;a.ownLast=
+"0"!==h;jQuery(function(){var c,b,e=document.getElementsByTagName("body")[0];e&&(c=document.createElement("div"),c.style.cssText="border:0;width:0;height:0;position:absolute;top:0;left:-9999px;margin-top:1px",e.appendChild(c).appendChild(d),d.innerHTML="<table><tr><td></td><td>t</td></tr></table>",b=d.getElementsByTagName("td"),b[0].style.cssText="padding:0;margin:0;border:0;display:none",f=0===b[0].offsetHeight,b[0].style.display="",b[1].style.display="none",a.reliableHiddenOffsets=f&&0===b[0].offsetHeight,
+d.innerHTML="",d.style.cssText="box-sizing:border-box;-moz-box-sizing:border-box;-webkit-box-sizing:border-box;padding:1px;border:1px;display:block;width:4px;margin-top:1%;position:absolute;top:1%;",jQuery.swap(e,null!=e.style.zoom?{zoom:1}:{},function(){a.boxSizing=4===d.offsetWidth}),window.getComputedStyle&&(a.pixelPosition="1%"!==(window.getComputedStyle(d,null)||{}).top,a.boxSizingReliable="4px"===(window.getComputedStyle(d,null)||{width:"4px"}).width,b=d.appendChild(document.createElement("div")),
+b.style.cssText=d.style.cssText="padding:0;margin:0;border:0;display:block;box-sizing:content-box;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;",b.style.marginRight=b.style.width="0",d.style.width="1px",a.reliableMarginRight=!parseFloat((window.getComputedStyle(b,null)||{}).marginRight)),typeof d.style.zoom!==core_strundefined&&(d.innerHTML="",d.style.cssText="padding:0;margin:0;border:0;display:block;box-sizing:content-box;-moz-box-sizing:content-box;-webkit-box-sizing:content-box;width:1px;padding:1px;display:inline;zoom:1",
+a.inlineBlockNeedsLayout=3===d.offsetWidth,d.style.display="block",d.innerHTML="<div></div>",d.firstChild.style.width="5px",a.shrinkWrapBlocks=3!==d.offsetWidth,a.inlineBlockNeedsLayout&&(e.style.zoom=1)),e.removeChild(c),c=d=b=b=null)});c=e=b=g=b=c=null;return a}({});return jQuery;
 }());
