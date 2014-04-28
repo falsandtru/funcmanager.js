@@ -67,8 +67,11 @@
       context.accessor = V.ACCESSOR ? V.ACCESSOR.cloneNode() : {};
       context.manager = manager;
       context.stock = M.stock();
-      if (names) {
-        names = names.split(/[\s,]{1,}/);
+      switch (typeof names) {
+        case 'string':
+          names = names.split(/[\s,]{1,}/);
+      }
+      if (names instanceof Array) {
         var i = 0, len = names.length, name;
         for (; i < len; i++) {
           manager(names[i], param)
