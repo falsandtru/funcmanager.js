@@ -3,9 +3,9 @@
  * Function Manager
  * 
  * @name FuncManager
- * @version 0.2.0
+ * @version 0.3.0
  * ---
- * @template JavaScriptMinimalMVC
+ * @template JavaScriptMinimalMVCTemplate
  * @author falsandtru https://github.com/falsandtru/
  * @copyright 2014, falsandtru
  * @license MIT http://opensource.org/licenses/mit-license.php
