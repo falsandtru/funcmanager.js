@@ -199,7 +199,7 @@
           this.get = param.ctor ? eval('(1&&function(){' +
                                           M.parseFunc(param.ctor).pop() + ';\n' +
                                           'return function(){\n' +
-                                            M.parseFunc(instance.get).pop().replace(/arguments\[1\]/, 'eval("(1&&"+arguments[1].toString()+")")') + ';\n' +
+                                            M.parseFunc(instance.get).pop().replace(/([\S]+)\.apply/, 'eval("(1&&"+$1.toString()+")").apply') + ';\n' +
                                           '}' +
                                         '})').call(instance)
                                 : this.get;
