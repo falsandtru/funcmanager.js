@@ -63,8 +63,6 @@
     },
     
     main: function(context, names, param) {
-      context = C.REGISTER_METHODS(context);
-      context.accessor = V.ACCESSOR ? V.ACCESSOR.cloneNode() : {};
       context.stock = M.stock();
       switch (typeof names) {
         case 'string':
@@ -158,9 +156,14 @@
       return M.MAIN.apply(M, [C.EXTEND(this)].concat([].slice.call(arguments)));
     },
     
+    PROPERTIES: {
+      accessor: true
+    },
+    
     FUNCTIONS: {},
     
     METHODS: {
+      accessor: function() {return V.ACCESSOR ? V.ACCESSOR.cloneNode() : {};},
       manager: function(name, param) {
         name = name || '';
         param = param || {};
@@ -444,13 +447,13 @@
           // コンテキストへの変更をend()で戻せるようadd()
           $context = $context.add();
         }
-        // コンテキストのプロパティを更新
-        C.UPDATE_PROPERTIES($context, C.FUNCTIONS);
-        C.UPDATE_PROPERTIES($context, C.METHODS);
-        // コンテキストに関数とメソッドを設定
-        C.REGISTER_FUNCTIONS($context);
-        C.REGISTER_METHODS($context);
       }
+      // コンテキストのプロパティを更新
+      C.UPDATE_PROPERTIES($context, C.FUNCTIONS);
+      C.UPDATE_PROPERTIES($context, C.METHODS);
+      // コンテキストに関数とメソッドを設定
+      C.REGISTER_FUNCTIONS($context);
+      C.REGISTER_METHODS($context);
       return $context;
     },
 
