@@ -3,7 +3,7 @@
  * Function Manager
  * 
  * @name FuncManager
- * @version 0.3.0
+ * @version 0.3.1
  * ---
  * @template JavaScriptMinimalMVCTemplate
  * @author falsandtru https://github.com/falsandtru/
