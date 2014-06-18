@@ -3,7 +3,7 @@
  * Function Manager
  * 
  * @name FuncManager
- * @version 0.3.1
+ * @version 0.3.2
  * ---
  * @template JavaScriptMinimalMVCTemplate
  * @author falsandtru https://github.com/falsandtru/
@@ -71,7 +71,7 @@
       if (names instanceof Array) {
         var i = 0, len = names.length, name;
         for (; i < len; i++) {
-          manager(names[i], param)
+          context.manager(names[i], param)
         }
       }
       return context;
