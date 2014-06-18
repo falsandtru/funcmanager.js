@@ -71,7 +71,7 @@
       if (names instanceof Array) {
         var i = 0, len = names.length, name;
         for (; i < len; i++) {
-          manager(names[i], param)
+          context.manager(names[i], param)
         }
       }
       return context;
