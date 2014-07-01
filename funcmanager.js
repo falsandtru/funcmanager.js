@@ -27,10 +27,6 @@
     // ネームスペース（プロパティネーム）
     NAME: 'FuncManager',
     
-    NAMES: {
-      CHANGE: 'mvc.change'
-    },
-    
     // 共有データ保存用オブジェクト
     store: {},
     
