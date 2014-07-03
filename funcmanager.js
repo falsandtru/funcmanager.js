@@ -1,16 +1,13 @@
-/*
+/**
  * 
  * Function Manager
  * 
  * @name FuncManager
- * @version 0.3.2
+ * @version 0.3.3
  * ---
- * @template JavaScriptMinimalMVCTemplate
- * @author falsandtru https://github.com/falsandtru/
+ * @author falsandtru https://github.com/falsandtru/funcmanager.js/
  * @copyright 2014, falsandtru
- * @license MIT http://opensource.org/licenses/mit-license.php
- * ---
- * Note:
+ * @license MIT
  * 
  */
 
@@ -26,10 +23,6 @@
   M = {
     // ネームスペース（プロパティネーム）
     NAME: 'FuncManager',
-    
-    NAMES: {
-      CHANGE: 'mvc.change'
-    },
     
     // 共有データ保存用オブジェクト
     store: {},
