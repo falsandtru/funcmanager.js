@@ -3,7 +3,7 @@
  * Function Manager
  * 
  * @name FuncManager
- * @version 0.3.2
+ * @version 0.3.3
  * ---
  * @author falsandtru https://github.com/falsandtru/funcmanager.js/
  * @copyright 2014, falsandtru
