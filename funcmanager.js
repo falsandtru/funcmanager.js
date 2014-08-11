@@ -182,7 +182,7 @@
               var _arguments_, _return_, _param_;
               _arguments_ = [].slice.call(arguments);
               _param_ = param;
-              instance.each(function() {
+              instance.each.call(this, function() {
                 var instance, param;
                 _return_ = arguments[1].apply(this, _arguments_.concat(!arguments[0] ? _param_.params : _param_.chain ? [_return_] : []));
               });
@@ -202,9 +202,10 @@
           
           this.acc = accessor;
           this.exec = function() {
-            return instance.get().apply(instance, [].slice.call(arguments));
+            return instance.get().apply(this, [].slice.call(arguments));
           };
           this.each = function(callback) {
+            // thisは呼び出し元指定のコンテキスト
             var fn, ret;
             for (var i = 0; fn = list[i]; i++) {
               ret = callback.call(instance, i, fn);

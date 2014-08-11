@@ -137,7 +137,14 @@ test( "function manager", function() {
   equal( fa2.param(), 4, "instance" );
   
   equal( fa.param(), 6, "instance" );
-  
+
+  fm('context');
+
+  fa.context = function () {
+    equal(this, document.body, "context");
+  };
+  $('body').one('click', fa.context).click();;
+
 });
 </script>
 </head>
