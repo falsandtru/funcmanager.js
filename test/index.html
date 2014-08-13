@@ -9,7 +9,7 @@
   <script src="../funcmanager.js"></script>
 <script>
 ( function () {
-  var accessor = new FuncManager().manager('demo') ;
+  var accessor = FuncManager(['demo']).accessor;
   
   var count = 0;
   accessor.demo = function(){count--};
@@ -21,7 +21,7 @@ test( "function manager", function() {
   ok( 1 == "1", "Passed!" );
   
   var ret, fm, fa ;
-  ret = new FuncManager() ;
+  ret = FuncManager() ;
   fa = ret.accessor ;
   fm = ret.manager ;
   
@@ -83,7 +83,8 @@ test( "function manager", function() {
   fa.chain = function(count){return count};
   equal( fa.chain(), 1, "chain" );
   
-  fm('ctor', { ctor: function(){
+  var obj = {};
+  fm.call(obj, 'ctor', { ctor: function(){
     var count=0;
     this.rate = 2;
   } });
@@ -91,8 +92,8 @@ test( "function manager", function() {
   var count=0;
   fa.ctor = function(){++count};
   fa.ctor = function(){return count * this.rate};
-  equal( fa.ctor(), 2, "ctor" );
-  equal( fa.ctor(), 4, "ctor" );
+  equal( fa.ctor.call(obj), 2, "ctor" );
+  equal( fa.ctor.call(obj), 4, "ctor" );
   
   fm('param', {
     ctor: function(){var count=1;},
@@ -119,7 +120,7 @@ test( "function manager", function() {
   equal( fa.param(), 5, "ctor, unique, chain, params" );
   
   var ret, fm2, fa2 ;
-  ret = new FuncManager() ;
+  ret = FuncManager() ;
   fa2 = ret.accessor ;
   fm2 = ret.manager ;
   

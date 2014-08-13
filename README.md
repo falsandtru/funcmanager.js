@@ -5,7 +5,7 @@ function managerは複数のJavaScript関数を1つの関数にまとめ、ア�
 複数のJavaScript関数を1つの関数にまとめます。コールバック関数の作成などに便利です。
 
 ```javascript
-var accessor = new FuncManager().manager('demo') ;
+var accessor = FuncManager(['demo']) ;
 
 var count = 0;
 accessor.demo = function(){count++};
@@ -17,25 +17,28 @@ accessor.demo(); // 1
 
 ### Register
 
-#### FuncManager( [ Names as array ] )
-`new FuncManager()`を実行すると関数管理オブジェクトが追加される`manager`とアクセサが追加される`accessor`の2つを持つオブジェクトを作成します。主に関数管理オブジェクトは管理関数の操作、アクセサは管理関数の設定と全管理関数実行関数の取得に使用します。IE6-7ではブラウザ対応のためHEAD要素に独自要素が追加されます。**DOM要素の既定のプロパティと同じプロパティ名はIE8以前のブラウザでエラーが発生する可能性があるため使用しないことを推奨します。**
+#### FuncManager( [ Names as array, Options as object ] )
+`FuncManager()`を実行するとアクセサ作成関数`manager`、アクセサが追加される`accessor`などのメンバを持つオブジェクトを作成します。`manager`と`accessor`のメンバは関数管理オブジェクトを兼ねており、管理関数の操作を行えます。IE6-7ではブラウザ対応のためHEAD要素に独自要素が追加されます。**DOM要素の既定のプロパティと同じプロパティ名はIE8以前のブラウザでエラーが発生する可能性があるため使用しないことを推奨します。**
 
 ```javascript
-var ret = new FuncManager();
+var ret = FuncManager();
 ret.manager;  // function
 ret.accessor; // object
+ret.context; // context
+ret.arguments; // [accessor, manager]
+ret.contextArguments; // [context, [accessor, manager]]
 ```
 
 ```javascript
-var ret = new FuncManager(['test']);
+var ret = FuncManager(['test']);
 ret.accessor.test; // accessor
 ```
 
 #### accessor
-作成されたアクセサを持ちます。
+アクセサと関数管理オブジェクトをプロパティに持ちます。
 
 #### manager( Name as string [, Options as object ] )
-accessorのプロパティにアクセサを、managerのプロパティに管理関数を操作するオブジェクトを作成します。
+accessorのプロパティにアクセサと関数管理オブジェクトを、managerのプロパティに関数管理オブジェクトを作成します。
 
 ##### Options
 
@@ -44,7 +47,7 @@ accessorのプロパティにアクセサを、managerのプロパティに管�
 
 ```javascript
 var ret, fm, fa ;
-ret = new FuncManager() ;
+ret = FuncManager() ;
 fa = ret.accessor ;
 fm = ret.manager ;
 
@@ -130,75 +133,104 @@ fa.chain(); // 1
 ページの初期化、イベントやjQueryのコールバックなどに利用できます。
 
 ```javascript
-(function(){
-  var accessor = this;
+new Function().apply.apply(function (accessor) {
+  var spec = accessor,
+      initialize = true,
+      always = true,
+      finish = false;
 
-  /* init
-     ========================================================================== */
-  $(this.init);
-  this.init = this.clientenv;
-  this.init = this.preload;
-  this.init = this.pjax;
-  this.init = this.visibilitytrigger;
-
-  /* reset
-     ========================================================================== */
-  this.reset = function() {$(document).trigger('preload');};
-  this.reset = this.visibilitytrigger;
-
-  /* component
-     ========================================================================== */
-
-  /* clientenv
-     -------------------------------------------------------------------------- */
-  this.clientenv = function(){
-    $.clientenv({ font: { lang: 'ja' } })
-    .addClass('hardware platform os windowsXP:lte windowsXP:gt browser ie ie8:lte')
-    .addClass('font', 'Meiryo, メイリオ', 'meiryo')
-    .clientenv({not: false})
-    .addClass('touch');
+/* init
+  ========================================================================== */
+  $(spec.init);
+  spec.init = spec.clientenv;
+  spec.init = spec.preload;
+  spec.init = spec.pjax;
+  spec.init = spec.visibilitytrigger;
+  spec.init = function () {
+    initialize = false;
   };
 
-  /* preload
-     -------------------------------------------------------------------------- */
-  this.preload = function(){
+/* component
+  ========================================================================== */
+
+/* clientenv
+  -------------------------------------------------------------------------- */
+  spec.clientenv = function () {
+    if (initialize) {
+      $.clientenv({ font: { lang: 'ja' } })
+      .addClass('hardware platform os windowsXP:lte windowsXP:gt browser ie ie8:lte')
+      .addClass('font', 'Meiryo, メイリオ', 'meiryo')
+      .clientenv({ not: false })
+      .addClass('touch');
+    }
+  };
+
+/* preload
+  -------------------------------------------------------------------------- */
+  spec.preload = function () {
     // 省略
   };
 
-  /* pjax
-     -------------------------------------------------------------------------- */
-  this.pjax = function(){
+/* pjax
+  -------------------------------------------------------------------------- */
+  spec.pjax = function () {
     // 省略
   };
 
-  /* visibilitytrigger
-     -------------------------------------------------------------------------- */
-  this.visibilitytrigger = function(){
-    $.visibilitytrigger();
+/* visibilitytrigger
+  -------------------------------------------------------------------------- */
+  spec.visibilitytrigger = function () {
+    if (always) {
+      $.visibilitytrigger();
 
-    $.vt({
-      ns: "sh",
-      trigger: "pre.sh",
-      callback: function(){ SyntaxHighlighter && SyntaxHighlighter.highlight(SyntaxHighlighter.defaults,this); },
-      ahead: [0, '*1'],
-      step: 0,
-      skip: true
-    }).disable();
+      $.vt({
+        ns: '.img.primary',
+        trigger: '#primary img[data-original]',
+        callback: function () { this.src = $(this).attr('data-original') },
+        ahead: [0, .1],
+        skip: true,
+        terminate: false
+      }).disable();
 
-    $.vt.enable().vtrigger();
+      $.vt({
+        ns: '.img.secondary',
+        trigger: '#secondary img[data-original]',
+        callback: function () { this.src = $(this).attr('data-original') },
+        ahead: [0, .1],
+        skip: true,
+        terminate: false
+      }).disable();
+
+      $.vt({
+        ns: '.iframe.primary',
+        trigger: '#primary iframe[data-original]',
+        callback: function () { this.src = $(this).attr('data-original') },
+        ahead: [0, .1],
+        skip: true
+      }).disable();
+
+      $.vt({
+        ns: ".sh.primary",
+        trigger: "#primary pre.sh",
+        callback: function () { SyntaxHighlighter && SyntaxHighlighter.highlight(SyntaxHighlighter.defaults, this); },
+        ahead: [0, .1],
+        step: 0,
+        skip: true
+      }).disable();
+
+      $.vt.enable().vtrigger();
+    }
   };
 
   return this;
-}).call(new FuncManager(
-  [
-    'init',
-    'reset',
-    'preload',
-    'pjax',
-    'visibilitytrigger',
-    'clientenv'
-  ]
-).accessor);
+},
+FuncManager([
+  'init',
+  'preload',
+  'pjax',
+  'visibilitytrigger',
+  'clientenv'
+]).contextArguments);
 ```
 
 ## ライセンス
