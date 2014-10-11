@@ -51,15 +51,17 @@ ret = FuncManager() ;
 fa = ret.accessor ;
 fm = ret.manager ;
 
-fm('ctor', { ctor: function(){
-  var count=0;
+var obj = {};
+fm.call(obj, 'ctor', { ctor: function(){
+  var count=1;
   this.rate = 2;
-} });
+}});
 
-fa.ctor = function(){count++};
-fa.ctor = function(){return count * this.rate};
-fa.ctor(); // 2
-fa.ctor(); // 4
+var count=0;
+fa.ctor = function(){++count};
+fa.ctor = function(){return count * this.rate};;
+fa.ctor.call(obj); // 4
+fa.ctor.call(obj); // 6
 ```
 
 ###### params as array
