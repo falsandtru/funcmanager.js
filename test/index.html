@@ -85,15 +85,15 @@ test( "function manager", function() {
   
   var obj = {};
   fm.call(obj, 'ctor', { ctor: function(){
-    var count=0;
+    var count=1;
     this.rate = 2;
   } });
   
   var count=0;
   fa.ctor = function(){++count};
   fa.ctor = function(){return count * this.rate};
-  equal( fa.ctor.call(obj), 2, "ctor" );
   equal( fa.ctor.call(obj), 4, "ctor" );
+  equal( fa.ctor.call(obj), 6, "ctor" );
   
   fm('param', {
     ctor: function(){var count=1;},
